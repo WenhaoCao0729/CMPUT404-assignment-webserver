@@ -1,4 +1,6 @@
 #  coding: utf-8 
+from cgi import print_form
+from operator import index
 import socketserver
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
@@ -30,9 +32,65 @@ import socketserver
 class MyWebServer(socketserver.BaseRequestHandler):
     
     def handle(self):
+        
+
         self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
+        str = self.data.decode()
+        print(str)
+
+        def is_get(str):
+            method = str[0:3]
+            if method != "GET":
+                return 404
+        
+    
+        def get_path(str):
+            tempStr = str.split("GET ")[1]
+            path = tempStr.split(" HTTP")[0]
+            print(path)
+            return path
+            
+        
+        #open html package
+        def html_part(path):
+            html_content = b"""HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"""
+            f= open(f".{path}",'rb')
+            html_content = html_content + f.read()
+            f.close()
+            self.request.sendall(html_content)
+            
+        
+        
+
+        #css part
+        def css_part(path):
+            css_content = b"""HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n"""
+            f = open(f".{path}",'rb')
+            css_content = css_content + f.read()
+            f.close
+            self.request.sendall(css_content)
+
+
+        
+        path = get_path(str)
+        def test_server(path):
+            if path == "/favicon.ico":
+                pass
+            else:
+                html_part(path)
+        
+
+        test_server(path)
+
+
+        # print ("Got a request of: %s\n" % self.data)
+        # print(f"this is afasdfsafdsafsda{self.client_address}")
+        # print(f"this is afasdfsafdsafsda{self.request}")
+        # print(f"this is afasdfsafdsafsda{self.server}")
+        #response_html = "HTTP/1.1 200 OK\r\n"
+    
+        
+        
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
@@ -40,7 +98,7 @@ if __name__ == "__main__":
     socketserver.TCPServer.allow_reuse_address = True
     # Create the server, binding to localhost on port 8080
     server = socketserver.TCPServer((HOST, PORT), MyWebServer)
-
+    
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
     server.serve_forever()
