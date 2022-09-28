@@ -2,6 +2,7 @@
 from cgi import print_form
 from operator import index
 import socketserver
+import os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -35,7 +36,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         
 
         self.data = self.request.recv(1024).strip()
-        str = self.data.decode()
+        str = self.data.decode("utf-8")
         print(str)
 
         def is_get(str):
@@ -53,7 +54,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         
         #open html package
         def html_part(path):
-            html_content = b"""HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"""
+            html_content = b"""HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"""
             f= open(f".{path}",'rb')
             html_content = html_content + f.read()
             f.close()
@@ -64,23 +65,32 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
         #css part
         def css_part(path):
-            css_content = b"""HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n"""
+            css_content = b"""HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\r\n"""
             f = open(f".{path}",'rb')
             css_content = css_content + f.read()
-            f.close
+            f.close()
             self.request.sendall(css_content)
+
+
+
+
 
 
         
         path = get_path(str)
-        def test_server(path):
-            if path == "/favicon.ico":
-                pass
-            else:
+        def endswithwhich(path):
+
+            if path.endswith('.css'):
+                css_part(path)
+            # if path == "/":
+            #     path = path + "www/index.html"
+            #     html_part(path)
+            if path.endswith('.html'):
                 html_part(path)
         
 
-        test_server(path)
+
+        endswithwhich(path)
 
 
         # print ("Got a request of: %s\n" % self.data)
