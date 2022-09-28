@@ -37,7 +37,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
         self.data = self.request.recv(1024).strip()
         str = self.data.decode("utf-8")
-        print(str)
+        
 
         def is_get(str):
             method = str[0:3]
@@ -48,9 +48,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
         def get_path(str):
             tempStr = str.split("GET ")[1]
             path = tempStr.split(" HTTP")[0]
-            print(path)
-            return path
-            
+            if path == "/www/":
+                return path
+            return "/www" + path
         
         #open html package
         def html_part(path):
@@ -72,19 +72,25 @@ class MyWebServer(socketserver.BaseRequestHandler):
             self.request.sendall(css_content)
 
 
-
-
-
-
-        
         path = get_path(str)
+        
+        def router(path):
+            # if path == "/":
+            #     path = path + "www/index.html"
+            # if path == "/www":
+            print(path)
+            if path == "/www/":
+                return path + "index.html"
+            
+            return path
+
+        path = router(path)
+        
         def endswithwhich(path):
 
             if path.endswith('.css'):
                 css_part(path)
-            # if path == "/":
-            #     path = path + "www/index.html"
-            #     html_part(path)
+           
             if path.endswith('.html'):
                 html_part(path)
         
