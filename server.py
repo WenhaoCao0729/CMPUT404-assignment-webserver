@@ -36,21 +36,22 @@ class MyWebServer(socketserver.BaseRequestHandler):
         
 
         self.data = self.request.recv(1024).strip()
+        
         str = self.data.decode("utf-8")
-        
+        print(str)
+        NOTFOUND = b"""HTTP/1.1 404 Not Found\r\n"""
+        NOTGET = b"""HTTP/1.1 405 Not Allowed\r\n"""
 
-        def is_get(str):
-            method = str[0:3]
-            if method != "GET":
-                return 404
-        
     
         def get_path(str):
-            tempStr = str.split("GET ")[1]
+            
+            tempStr = str.split(" ")[1]
             path = tempStr.split(" HTTP")[0]
+            print(path)
             if path == "/www/":
                 return path
             return "/www" + path
+        
         
         #open html package
         def html_part(path):
@@ -74,6 +75,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
         path = get_path(str)
         
+        
+
+
         def router(path):
             # if path == "/":
             #     path = path + "www/index.html"
@@ -81,10 +85,16 @@ class MyWebServer(socketserver.BaseRequestHandler):
             print(path)
             if path == "/www/":
                 return path + "index.html"
-            
+            elif path == "/www/deep/":
+                return path + "index.html"
             return path
 
         path = router(path)
+        def isValid(path1):
+            exist = os.path.exists(f".{path1}")
+            return exist
+            
+        
         
         def endswithwhich(path):
 
@@ -93,11 +103,28 @@ class MyWebServer(socketserver.BaseRequestHandler):
            
             if path.endswith('.html'):
                 html_part(path)
+
+        def is_get(str):
+            method = str[0:3]
+            
+            if method == "GET":
+                return True
+            else:
+                return False
+                
+        if (not isValid(path)):
+            self.request.sendall(NOTFOUND)
+
+        elif (not is_get(str)):
+            self.request.sendall(NOTGET)
+            
+        else:
+            endswithwhich(path)
         
-
-
-        endswithwhich(path)
-
+        
+        
+            # endswithwhich(path)
+            # self.request.sendall(NOTFOUND)
 
         # print ("Got a request of: %s\n" % self.data)
         # print(f"this is afasdfsafdsafsda{self.client_address}")
