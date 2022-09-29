@@ -1,6 +1,4 @@
 #  coding: utf-8 
-from cgi import print_form
-from operator import index
 import socketserver
 import os
 
@@ -29,7 +27,6 @@ import os
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
-
 class MyWebServer(socketserver.BaseRequestHandler):
     
     def handle(self):
@@ -38,63 +35,72 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.data = self.request.recv(1024).strip()
         
         str = self.data.decode("utf-8")
-        print(str)
+
         NOTFOUND = b"""HTTP/1.1 404 Not Found\r\n"""
         NOTGET = b"""HTTP/1.1 405 Not Allowed\r\n"""
+        REDIRCT = b"""HTTP/1.1 301 Moved Permanently\r\n"""
 
     
         def get_path(str):
             
             tempStr = str.split(" ")[1]
             path = tempStr.split(" HTTP")[0]
-            print(path)
             if path == "/www/":
                 return path
-            return "/www" + path
+            return "./www" + path
         
         
         #open html package
         def html_part(path):
             html_content = b"""HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"""
-            f= open(f".{path}",'rb')
+            f= open(f"{path}",'rb')
             html_content = html_content + f.read()
             f.close()
             self.request.sendall(html_content)
             
-        
-        
 
         #css part
         def css_part(path):
             css_content = b"""HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\r\n"""
-            f = open(f".{path}",'rb')
+            f = open(f"{path}",'rb')
             css_content = css_content + f.read()
             f.close()
             self.request.sendall(css_content)
 
 
         path = get_path(str)
-        
-        
-
-
-        def router(path):
-            # if path == "/":
-            #     path = path + "www/index.html"
-            # if path == "/www":
-            print(path)
-            if path == "/www/":
-                return path + "index.html"
-            elif path == "/www/deep/":
-                return path + "index.html"
+        def isDir(path1):
+            if os.path.isdir(path1) and not path.endswith('/'):
+                
+                self.request.sendall(REDIRCT)
+                return True
+            else:
+                return False
+        isDir(path)
+        def deal_etc(path):
+            substring = '../'
+            index = path.find(substring)
+            if (index != -1):
+                path = path[:index]
+                self.request.sendall(NOTFOUND)
             return path
+        
+        path = deal_etc(path)
+
+        
+        
+        def router(path1):
+
+            if path1.endswith('/'):
+                return path1 + "index.html"
+            
+            return path1
 
         path = router(path)
         def isValid(path1):
-            exist = os.path.exists(f".{path1}")
+            exist = os.path.exists(f"{path1}")
             return exist
             
-        
         
         def endswithwhich(path):
 
@@ -104,6 +110,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
             if path.endswith('.html'):
                 html_part(path)
 
+
+
         def is_get(str):
             method = str[0:3]
             
@@ -111,7 +119,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 return True
             else:
                 return False
-                
+
+        
         if (not isValid(path)):
             self.request.sendall(NOTFOUND)
 
@@ -123,9 +132,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         
         
         
-            # endswithwhich(path)
-            # self.request.sendall(NOTFOUND)
-
+           
         # print ("Got a request of: %s\n" % self.data)
         # print(f"this is afasdfsafdsafsda{self.client_address}")
         # print(f"this is afasdfsafdsafsda{self.request}")
@@ -133,7 +140,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         #response_html = "HTTP/1.1 200 OK\r\n"
     
         
-        
+
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
