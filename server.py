@@ -40,7 +40,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         NOTGET = b"""HTTP/1.1 405 Not Allowed\r\n"""
         REDIRCT = b"""HTTP/1.1 301 Moved Permanently\r\n"""
 
-    
+        #get path
         def get_path(str):
             
             tempStr = str.split(" ")[1]
@@ -50,7 +50,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             return "./www" + path
         
         
-        #open html package
+        #send html content
         def html_part(path):
             html_content = b"""HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"""
             f= open(f"{path}",'rb')
@@ -59,7 +59,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             self.request.sendall(html_content)
             
 
-        #css part
+        #send css content
         def css_part(path):
             css_content = b"""HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\r\n"""
             f = open(f"{path}",'rb')
@@ -67,7 +67,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             f.close()
             self.request.sendall(css_content)
 
-
+    #https://www.geeksforgeeks.org/python-os-path-isdir-method/ reference
         path = get_path(str)
         def isDir(path1):
             if os.path.isdir(path1) and not path.endswith('/'):
@@ -95,13 +95,13 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 return path1 + "index.html"
             
             return path1
-
+    #reference  https://www.geeksforgeeks.org/python-os-path-exists-method/#:~:text=os.-,path.,open%20file%20descriptor%20or%20not 
         path = router(path)
         def isValid(path1):
             exist = os.path.exists(f"{path1}")
             return exist
             
-        
+        #go to the final router
         def endswithwhich(path):
 
             if path.endswith('.css'):
@@ -111,7 +111,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 html_part(path)
 
 
-
+        #Test if it's get method
         def is_get(str):
             method = str[0:3]
             
@@ -120,10 +120,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
             else:
                 return False
 
-        
+        #Test if it is 404
         if (not isValid(path)):
             self.request.sendall(NOTFOUND)
-
+        #Test if it is 405
         elif (not is_get(str)):
             self.request.sendall(NOTGET)
             
@@ -152,3 +152,4 @@ if __name__ == "__main__":
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
     server.serve_forever()
+    
