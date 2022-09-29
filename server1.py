@@ -38,10 +38,11 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
         NOTFOUND = b"""HTTP/1.1 404 Not Found\r\n"""
         NOTGET = b"""HTTP/1.1 405 Not Allowed\r\n"""
+        REDIRCT = b"""HTTP/1.1 301 Moved Permanently\r\n"""
 
     
         def get_path(str):
-            print(str)
+            
             tempStr = str.split(" ")[1]
             path = tempStr.split(" HTTP")[0]
             if path == "/www/":
@@ -57,8 +58,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
             f.close()
             self.request.sendall(html_content)
             
-        
-        
 
         #css part
         def css_part(path):
@@ -70,6 +69,14 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
 
         path = get_path(str)
+        def isDir(path1):
+            if os.path.isdir(path1) and not path.endswith('/'):
+                
+                self.request.sendall(REDIRCT)
+                return True
+            else:
+                return False
+        isDir(path)
         def deal_etc(path):
             substring = '../'
             index = path.find(substring)
@@ -80,18 +87,20 @@ class MyWebServer(socketserver.BaseRequestHandler):
         
         path = deal_etc(path)
 
-        def router(path):
+        
+        
+        def router(path1):
 
-            if path.endswith('/'):
-                return path + "index.html"
-            return path
+            if path1.endswith('/'):
+                return path1 + "index.html"
+            
+            return path1
 
         path = router(path)
         def isValid(path1):
             exist = os.path.exists(f"{path1}")
             return exist
             
-        
         
         def endswithwhich(path):
 
@@ -100,6 +109,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
            
             if path.endswith('.html'):
                 html_part(path)
+
+
 
         def is_get(str):
             method = str[0:3]
